@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plaksha Orbital Pipeline Deck</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep:    #0a0f1e;
+      --bg-panel:   #0f1729;
+      --bg-card:    #131e35;
+      --border:     #1e2d4a;
+      --accent:     #00e5ff;
+      --accent-dim: #0088aa;
+      --amber:      #ffb300;
+      --green:      #69ff47;
+      --purple:     #c97bff;
+      --red-stage:  #ff6b6b;
+      --danger:     #ff3d57;
+      --text-main:  #e8eaf6;
+      --text-muted: #7986a3;
+      --font-mono:  'JetBrains Mono', monospace;
+      --font-ui:    'Outfit', sans-serif;
+      --radius:     8px;
+      --transition: 0.2s ease;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background-color: var(--bg-deep);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    .app-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+      .app-layout { flex-direction: column; overflow: auto; }
+    }
+
+    .left-panel {
+      width: 28%;
+      min-width: 320px;
+      border-right: 1px solid var(--border);
+      background-color: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      overflow-y: auto;
+      gap: 1.5rem;
+    }
+
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      background-color: var(--bg-deep);
+      overflow: hidden;
+      gap: 1rem;
+    }
+
+    /* Detail Mode Fullscreen Expansion */
+    body.detail-mode-active .left-panel {
+      display: none;
+    }
+
+    section {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Buttons */
+    button {
+      background-color: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.5rem 1rem;
+      font-family: var(--font-ui);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover:not(:disabled) {
+      filter: brightness(1.2);
+    }
+    button:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-step { background-color: var(--accent); color: var(--bg-deep); border-color: var(--accent); }
+    .btn-run { background-color: var(--amber); color: var(--bg-deep); border-color: var(--amber); }
+
+    /* Inputs */
+    input, select {
+      background-color: var(--bg-deep);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 0.4rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    /* Instruction Row */
+    .instr-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      background-color: var(--bg-deep);
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .instr-row span.label {
+      font-family: var(--font-mono);
+      color: var(--accent);
+      font-weight: bold;
+      width: 25px;
+    }
+
+    .instr-inputs {
+      display: flex;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .operand-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .operand-group label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .operand-group input {
+      width: 50px;
+    }
+
+    .btn-remove {
+      background-color: transparent;
+      border: none;
+      color: var(--danger);
+      font-size: 1.2rem;
+      padding: 0.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+    .btn-remove:hover {
+      background-color: rgba(255, 61, 87, 0.1);
+    }
+
+    #btn-add-instr {
+      width: 100%;
+      background-color: transparent;
+      border: 1px dashed var(--accent-dim);
+      color: var(--accent);
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    #btn-add-instr:hover {
+      background-color: rgba(0, 229, 255, 0.1);
+      border-color: var(--accent);
+    }
+    
+    .stepper-control {
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .stepper-btn {
+      background: none;
+      border: none;
+      color: var(--text-main);
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      border-radius: 0;
+    }
+    .stepper-btn:hover { background-color: var(--border); }
+    #num-instr {
+      width: 30px;
+      text-align: center;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      padding: 0;
+      -moz-appearance: textfield;
+    }
+    #num-instr::-webkit-outer-spin-button,
+    #num-instr::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    /* Pipeline Toggle */
+    .toggle-group {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .toggle-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    /* Table */
+    #table-container {
+      flex: 1;
+      overflow: auto;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 4px;
+      font-family: var(--font-mono);
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: normal;
+      padding: 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 8px;
+      text-align: center;
+      min-width: 60px;
+      min-height: 60px;
+      vertical-align: middle;
+      transition: opacity var(--transition);
+      position: relative;
+    }
+
+    .cell-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      width: 100%;
+      min-height: 100%;
+    }
+
+    .stage-label-main {
+      font-weight: bold;
+    }
+
+    td.instr-label {
+      background-color: var(--bg-panel);
+      color: var(--text-main);
+      font-weight: bold;
+      border: none;
+      text-align: left;
+      position: sticky;
+      left: 0;
+      display: table-cell;
+      vertical-align: middle;
+      height: auto;
+    }
+
+    /* Cell Colors */
+    .stage-IF { background-color: #1a2a4a; color: var(--accent); }
+    .stage-ID { background-color: #1a3a2a; color: var(--green); }
+    .stage-EX { background-color: #3a2a1a; color: var(--amber); }
+    .stage-MEM { background-color: #2a1a3a; color: var(--purple); }
+    .stage-WB { background-color: #3a1a1a; color: var(--red-stage); }
+    .stage-MEMWB { background-color: #3a1a3a; color: #ff9fff; }
+    .stage-STALL { 
+      background-color: #000000; 
+      color: #ffffff; 
+      border: 1px solid var(--border) !important;
+    }
+    .stage-FWD { 
+      background-color: #1a3a3a; 
+      color: #00ffcc; 
+    }
+
+
+
+    @keyframes pulse-red {
+      from { box-shadow: 0 0 2px var(--danger); }
+      to { box-shadow: 0 0 8px var(--danger); }
+    }
+
+    .col-current {
+      border-left: 2px solid var(--accent) !important;
+      border-right: 2px solid var(--accent) !important;
+    }
+
+    .cell-new {
+      opacity: 0.4;
+      animation: fade-in 0.3s forwards;
+    }
+    
+    @keyframes fade-in {
+      to { opacity: 1; }
+    }
+
+    /* Hazard Log */
+    #hazard-log {
+      height: 120px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .hazard-item {
+      margin-bottom: 0.4rem;
+    }
+    .hazard-item.warning { color: var(--amber); }
+    .hazard-item.ok { color: var(--green); }
+
+    /* Legend */
+    #stage-legend {
+      display: flex;
+      gap: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .legend-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+    }
+
+    /* Banner */
+    #completion-banner {
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--green);
+      color: var(--bg-deep);
+      padding: 0.5rem 1.5rem;
+      border-radius: 20px;
+      font-weight: bold;
+      display: none;
+      z-index: 100;
+      animation: slide-down 0.3s forwards;
+    }
+    @keyframes slide-down {
+      from { top: -50px; }
+      to { top: 1rem; }
+    }
+
+    /* Step in Detail Side Panel */
+    /* Detail Mode Narrative Panel */
+    #narrative-panel {
+      display: none;
+      flex: 0 0 25%;
+      min-width: 280px;
+      flex-direction: column;
+      overflow-y: auto;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+    #narrative-panel h3 { margin-top: 0; margin-bottom: 0.8rem; color: var(--accent); }
+    .narrative-block { margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+    .narrative-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .narrative-block strong { color: var(--accent); font-family: var(--font-mono); }
+    .text-warn { color: var(--amber); }
+    .text-ok { color: var(--green); }
+    .text-neutral { color: var(--text-main); }
+    .stall-reason {
+      font-size: 10px;
+      color: var(--text-muted);
+      word-break: break-word;
+      text-align: center;
+      line-height: 1.1;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="completion-banner">✓ Simulation Complete</div>
+  <header>
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+      <div>
+        <h1>PIPELINE SIMULATOR</h1>
+      </div>
+    </div>
+  </header>
+  
+  <main class="app-layout">
+    <aside class="left-panel">
+      <section id="pipeline-config">
+        <h2 style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; letter-spacing: 0.5px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+          PIPELINE CONFIGURATION
+        </h2>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Pipeline Type</div>
+        <div class="toggle-group">
+          <label><input type="radio" name="pipeline-type" value="4-stage"> 4-Stage</label>
+          <label><input type="radio" name="pipeline-type" value="5-stage" checked> 5-Stage</label>
+        </div>
+        <div>
+          <label><input type="checkbox" id="fwd-toggle"> Enable Data Forwarding</label>
+        </div>
+      </section>
+      
+      <section id="instruction-setup">
+        <h2 style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; letter-spacing: 0.5px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          INSTRUCTION SETUP
+        </h2>
+        <div style="margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+          <label for="num-instr" style="font-size: 0.85rem; color: var(--text-muted);">Number of Instructions (1-10):</label>
+          <div class="stepper-control">
+            <button id="btn-dec-instr" class="stepper-btn">-</button>
+            <input type="number" id="num-instr" min="1" max="10" value="4" readonly>
+            <button id="btn-inc-instr" class="stepper-btn">+</button>
+          </div>
+        </div>
+        
+        <div id="instr-list"></div>
+        
+        <button id="btn-add-instr">+ Add Instruction</button>
+        <div id="setup-error" class="error-msg"></div>
+      </section>
+    </aside>
+    
+    <section class="right-panel">
+      <div id="stage-legend">
+        <!-- populated by JS -->
+      </div>
+      
+      <div id="controls" style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <!-- Standard Mode Controls -->
+        <button id="btn-step" class="btn-step">⏭ Step</button>
+        <button id="btn-step-detail" class="btn-step" style="background-color: var(--amber); color: var(--bg-deep); border: none;">🔍 Step in Detail</button>
+        <button id="btn-run" class="btn-run">▶ Run</button>
+        
+        <!-- Detail Mode Controls -->
+        <button id="btn-prev-detail" class="btn-step" style="display: none; background-color: var(--bg-panel); border: 1px solid var(--border);">← Previous Cycle</button>
+        <button id="btn-next-detail" class="btn-step" style="display: none; background-color: var(--accent); color: var(--bg-deep); border: none;">Next Cycle →</button>
+        <button id="btn-back-detail" class="btn-step" style="display: none; background-color: var(--red-stage); color: var(--bg-deep); border: none;">✕ Exit Detail Mode</button>
+        
+        <!-- Shared -->
+        <button id="btn-pause" style="display: none;">⏸ Pause</button>
+        <button id="btn-reset">↺ Reset</button>
+      </div>
+      
+      <div id="pipeline-view-wrapper" style="position: relative; flex: 1; display: flex; gap: 1rem; overflow: hidden; transition: all 0.3s ease;">
+        <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+          <div id="table-container" style="transition: all 0.3s ease;">
+            <table id="pipeline-table">
+              <!-- populated by JS -->
+            </table>
+          </div>
+          <div id="timeline-status-bar" style="display: none; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; background-color: var(--bg-card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); font-size: 0.85rem; color: var(--text-muted);">
+            <div id="timeline-status-left" style="display: flex; gap: 1rem; align-items: center;"></div>
+            <div id="timeline-status-right"></div>
+          </div>
+        </div>
+        <div id="narrative-panel">
+          <!-- populated by JS -->
+        </div>
+      </div>
+      
+      <section id="hazard-log-container">
+        <h2 style="margin-bottom: 1rem; font-size: 1.1rem; text-transform: none; color: #fff; font-family: var(--font-mono);">
+          Hazard Details
+        </h2>
+        <div id="hazard-log" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    /*
+     * SIMULATION ASSUMPTIONS
+     * ======================
+     * 1. Single-issue, in-order pipeline. One instruction enters IF per cycle.
+     * 2. Register result is available at the END of the WB stage (5-stage) or MEM/WB stage (4-stage) WITHOUT forwarding.
+     * 3. WITHOUT forwarding: ID stage decode requires fully written data. Stalls occur between IF and ID (delaying the ID stage).
+     * 4. WITH forwarding: Data is forwarded to EX. Stalls (e.g., load-use) occur between ID and EX.
+     * 5. WITH forwarding (5-stage):
+     *    - ALU→ALU: result forwarded from end of EX. 0 stalls if ≥1 cycle gap.
+     *    - ALU→ALU consecutive: 0 stalls (EX/MEM forwarding).
+     *    - LW→any (load-use, consecutive): 1 stall always (MEM/EX hazard).
+     *    - LW→any (1-apart): 0 stalls (MEM/WB forwarding covers it).
+     * 6. WITH forwarding (4-stage):
+     *    - ALU→ALU consecutive: 0 stalls.
+     *    - LW→any consecutive: 0 stalls (MEM/WB is the final stage; value available in time).
+     * 6. WAR and WAW hazards do not occur in a single-issue, in-order pipeline.
+     * 7. SW writes to memory only; it has no register destination.
+     * 8. R0 is not hardwired to zero; treated as a general-purpose register.
+     * 9. Maximum 10 instructions per simulation.
+     * 10. Control hazards (branches/jumps) are not supported.
+     */
+
+    // ─── SECTION 1: CONSTANTS & CONFIG ───────────────────────────
+    const STAGES_5 = ['IF', 'ID', 'EX', 'MEM', 'WB'];
+    const STAGES_4 = ['IF', 'ID', 'EX', 'MEM/WB'];
+
+    // ─── SECTION 2: STATE ────────────────────────────────────────
+    let instructions = [];
+    let pipelineType = '5-stage';
+    let forwardingEnabled = false;
+    let schedule = [];
+    let hazards = [];
+    let currentCycle = 0;
+    let detailCycle = 0;
+    let isRunning = false;
+    let runTimer = null;
+    let maxCycle = 0;
+    let isDetailMode = false;
+
+    // ─── SECTION 3: INSTRUCTION PARSING & VALIDATION ─────────────
+    function getDestReg(opcode, op1) {
+      if (opcode === 'SW') return null;
+      return op1;
+    }
+
+    function getSrcRegs(opcode, op1, op2, op3) {
+      if (opcode === 'ADD' || opcode === 'SUB' || opcode === 'AND') return [op2, op3];
+      if (opcode === 'ORI') return [op2]; // op2 is RS1
+      if (opcode === 'LW') return [op3]; // op3 is base
+      if (opcode === 'SW') return [op1, op3]; // op1 is src, op3 is base
+      return [];
+    }
+
+    function validateRegister(regStr) {
+      if (!regStr) return false;
+      const clean = regStr.toUpperCase().replace(/[^A-Z0-9$]/g, '');
+      const match = clean.match(/^R(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        return num >= 0 && num <= 31;
+      }
+      if (clean.match(/^\$[A-Z0-9]+$/)) {
+        return true;
+      }
+      return false;
+    }
+
+    function parseInstructions() {
+      const rows = document.querySelectorAll('.instr-row');
+      let parsed = [];
+      let isValid = true;
+      let errorMsg = '';
+
+      rows.forEach((row, index) => {
+        const id = `I${index + 1}`;
+        const opcode = row.querySelector('.op-select').value;
+        const inputs = row.querySelectorAll('input[type="text"]');
+        const op1 = inputs[0].value.trim().toUpperCase().replace(/[^A-Z0-9$]/g, '');
+        const op2_raw = inputs[1].value.trim();
+        const op2 = op2_raw.toUpperCase().replace(/[^A-Z0-9$]/g, '');
+        const op3_raw = inputs[2].value.trim();
+        const op3 = op3_raw.toUpperCase().replace(/[^A-Z0-9$]/g, '');
+
+        // Validate
+        if (opcode === 'ADD' || opcode === 'SUB' || opcode === 'AND') {
+          if (!validateRegister(op1) || !validateRegister(op2) || !validateRegister(op3)) {
+            isValid = false;
+            errorMsg = `Invalid registers in ${id}. Must be R0-R31 or MIPS style (e.g., $t0).`;
+          }
+        } else if (opcode === 'ORI') {
+          if (!validateRegister(op1) || !validateRegister(op2)) {
+            isValid = false;
+            errorMsg = `Invalid registers in ${id}. Must be R0-R31 or MIPS style (e.g., $t0).`;
+          }
+          if (isNaN(parseInt(op3_raw, 10))) {
+            isValid = false;
+            errorMsg = `Invalid immediate in ${id}. Must be an integer.`;
+          }
+        } else if (opcode === 'LW' || opcode === 'SW') {
+          if (!validateRegister(op1) || !validateRegister(op3)) {
+            isValid = false;
+            errorMsg = `Invalid registers in ${id}. Must be R0-R31 or MIPS style (e.g., $t0).`;
+          }
+          if (isNaN(parseInt(op2_raw, 10))) {
+            isValid = false;
+            errorMsg = `Invalid offset in ${id}. Must be an integer.`;
+          }
+        }
+
+        let text = '';
+        if (opcode === 'ADD' || opcode === 'SUB' || opcode === 'AND') {
+          text = `${opcode} ${op1}, ${op2}, ${op3}`;
+        } else if (opcode === 'ORI') {
+          text = `${opcode} ${op1}, ${op2}, ${op3_raw}`;
+        } else if (opcode === 'LW') {
+          text = `LW ${op1}, ${op2_raw}(${op3})`;
+        } else if (opcode === 'SW') {
+          text = `SW ${op1}, ${op2_raw}(${op3})`;
+        }
+
+        parsed.push({
+          id,
+          opcode,
+          dest: getDestReg(opcode, op1),
+          sources: getSrcRegs(opcode, op1, op2, op3),
+          op1, op2: (opcode === 'LW' || opcode === 'SW') ? op2_raw : op2, op3: (opcode === 'ORI' ? op3_raw : op3),
+          text
+        });
+      });
+
+      const errDiv = document.getElementById('setup-error');
+      if (!isValid) {
+        errDiv.textContent = errorMsg;
+        errDiv.style.display = 'block';
+        return null;
+      }
+      errDiv.style.display = 'none';
+      return parsed;
+    }
+
+    function hasRAW(instrJ, instrI) {
+      const dest = instrJ.dest;
+      if (!dest) return null;
+      if (instrI.sources.includes(dest)) return dest;
+      return null;
+    }
+
+    // ─── SECTION 4 & 5: HAZARD DETECTION & SCHEDULING ────────────
+    function buildScheduleAndHazards(instrs, pipeline, forwarding) {
+      let sched = [];
+      let haz = [];
+      let mCycle = 0;
+
+      for (let i = 0; i < instrs.length; i++) {
+        let IF_cycle = 1;
+        if (i > 0) {
+          if (pipeline === '5-stage') {
+            IF_cycle = sched[i-1].ID;
+          } else {
+            IF_cycle = sched[i-1].IF + 1;
+          }
+        }
+        
+        let instr_hazards = [];
+        for (let j = 0; j < i; j++) {
+          let reg = hasRAW(instrs[j], instrs[i]);
+          if (reg) {
+            let avail = 0;
+            let fwdPath = '';
+            if (forwarding) {
+              if (pipeline === '5-stage') {
+                if (instrs[j].opcode === 'LW') {
+                  avail = sched[j].MEM;
+                  fwdPath = 'MEM stage';
+                } else {
+                  avail = sched[j].EX;
+                  fwdPath = 'EX/MEM';
+                }
+              } else { // 4-stage
+                if (instrs[j].opcode === 'LW') {
+                  avail = sched[j].MEMWB;
+                  fwdPath = 'MEM/WB stage';
+                } else {
+                  avail = sched[j].EX;
+                  fwdPath = 'EX/EX';
+                }
+              }
+            } else {
+              if (pipeline === '5-stage') {
+                avail = sched[j].WB;
+              } else {
+                avail = sched[j].MEMWB;
+              }
+            }
+            instr_hazards.push({ producer: j, reg, avail, fwdPath });
+          }
+        }
+        
+        let ID_cycle, EX_cycle;
+        let stall_cycles = 0;
+        let stall_placement = '';
+        let forwarded = false;
+        
+        if (!forwarding) {
+          let earliest_ID = Math.max(IF_cycle + 1, (i > 0 ? sched[i-1].EX : 0));
+          let max_avail = 0;
+          for (let h of instr_hazards) {
+            if (h.avail > max_avail) max_avail = h.avail;
+          }
+          if (max_avail > 0) {
+            let required_ID = max_avail + 1;
+            if (required_ID > earliest_ID) {
+              earliest_ID = required_ID;
+            }
+          }
+          ID_cycle = earliest_ID;
+          EX_cycle = Math.max(ID_cycle + 1, (i > 0 ? (pipeline === '5-stage' ? sched[i-1].MEM : sched[i-1].MEMWB) : 0));
+          stall_cycles = ID_cycle - IF_cycle - 1;
+          stall_placement = stall_cycles > 0 ? 'IF-ID' : '';
+          
+          for (let h of instr_hazards) {
+            let req = h.avail + 1;
+            let st = Math.max(0, req - Math.max(IF_cycle + 1, (i > 0 ? sched[i-1].EX : 0)));
+            if (st > 0) {
+              haz.push(`⚠ RAW Hazard: ${instrs[i].id} reads ${h.reg} (written by ${instrs[h.producer].id}) — stall inserted before ID`);
+            }
+          }
+        } else {
+          let earliest_ID = Math.max(IF_cycle + 1, (i > 0 ? sched[i-1].EX : 0));
+          let earliest_EX = Math.max(earliest_ID + 1, (i > 0 ? (pipeline === '5-stage' ? sched[i-1].MEM : sched[i-1].MEMWB) : 0));
+          let max_avail = 0;
+          for (let h of instr_hazards) {
+            if (h.avail > max_avail) max_avail = h.avail;
+          }
+          let actual_EX = earliest_EX;
+          if (max_avail > 0) {
+            let required_EX = max_avail + 1;
+            if (required_EX > actual_EX) {
+              actual_EX = required_EX;
+            }
+          }
+          if (pipeline === '5-stage') {
+            ID_cycle = actual_EX - 1;
+          } else {
+            ID_cycle = earliest_ID;
+          }
+          EX_cycle = actual_EX;
+          stall_cycles = (ID_cycle - IF_cycle - 1) + (EX_cycle - ID_cycle - 1);
+          stall_placement = '';
+          
+          for (let h of instr_hazards) {
+            let req = h.avail + 1;
+            let unstalled_EX = Math.max(Math.max(IF_cycle + 1, (i > 0 ? sched[i-1].EX : 0)) + 1, (i > 0 ? (pipeline === '5-stage' ? sched[i-1].MEM : sched[i-1].MEMWB) : 0));
+            let st = Math.max(0, req - unstalled_EX);
+            if (st === 0) {
+              haz.push(`⚠ RAW Hazard: ${instrs[i].id} reads ${h.reg} (written by ${instrs[h.producer].id}) — forwarded from ${h.fwdPath}`);
+              forwarded = true;
+            } else {
+              let stall_loc = (pipeline === '5-stage') ? 'ID' : 'EX';
+              haz.push(`⚠ RAW Hazard: ${instrs[i].id} reads ${h.reg} (written by ${instrs[h.producer].id}) — stall inserted before ${stall_loc} (forwarded from ${h.fwdPath})`);
+              forwarded = true;
+            }
+          }
+        }
+        let entry_hazards = [];
+        for (let h of instr_hazards) {
+          entry_hazards.push({
+            producerIdx: h.producer,
+            reg: h.reg,
+            availCycle: h.avail,
+            fwdPath: h.fwdPath,
+            resolveCycle: (!forwarding) ? ID_cycle : EX_cycle,
+            producerStageAtAvail: (!forwarding) 
+              ? (pipeline === '5-stage' ? 'WB' : 'MEM/WB') 
+              : (pipeline === '5-stage' ? (instrs[h.producer].opcode === 'LW' ? 'MEM' : 'EX') : 'EX')
+          });
+        }
+        
+        let entry = {
+          IF: IF_cycle,
+          ID: ID_cycle,
+          EX: EX_cycle,
+          stalls: stall_cycles,
+          stall_placement: stall_placement,
+          forwarded: forwarded,
+          hazards_detail: entry_hazards
+        };
+        
+        if (pipeline === '5-stage') {
+          entry.MEM = entry.EX + 1;
+          entry.WB = entry.MEM + 1;
+          if (entry.WB > mCycle) mCycle = entry.WB;
+        } else {
+          entry.MEMWB = entry.EX + 1;
+          if (entry.MEMWB > mCycle) mCycle = entry.MEMWB;
+        }
+        
+        sched.push(entry);
+      }
+      
+      return { sched, haz, mCycle };
+    }
+
+    // ─── SECTION 6: TABLE RENDERING ──────────────────────────────
+    function getCellContent(instrIdx, cycle, sched, pipeline) {
+      const s = sched[instrIdx];
+      
+      const icons = {
+        IF: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>',
+        ID: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/></svg>',
+        EX: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+        MEM: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
+        WB: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+        STALL: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
+      };
+
+      if (cycle === s.IF) return { label: 'IF', icon: icons.IF, cssClass: 'stage-IF' };
+      if (cycle === s.ID) return { label: 'ID', icon: icons.ID, cssClass: 'stage-ID' };
+      if (cycle === s.EX) {
+        if (s.forwarded) return { label: '→ EX', icon: icons.EX, cssClass: 'stage-FWD' };
+        return { label: 'EX', icon: icons.EX, cssClass: 'stage-EX' };
+      }
+      if (pipeline === '5-stage') {
+        if (cycle === s.MEM) return { label: 'MEM', icon: icons.MEM, cssClass: 'stage-MEM' };
+        if (cycle === s.WB) return { label: 'WB', icon: icons.WB, cssClass: 'stage-WB' };
+      } else {
+        if (cycle === s.MEMWB) return { label: 'MEM/WB', icon: icons.MEM, cssClass: 'stage-MEMWB' };
+      }
+      
+      if (cycle > s.IF && cycle < s.ID) {
+        return { label: 'STALL', icon: icons.STALL, cssClass: 'stage-STALL', isStall: true, stallStage: 'IF' };
+      }
+      if (cycle > s.ID && cycle < s.EX) {
+        return { label: 'STALL', icon: icons.STALL, cssClass: 'stage-STALL', isStall: true, stallStage: 'ID' };
+      }
+      
+      return { label: '', icon: '', cssClass: '' };
+    }
+
+    function renderTable() {
+      const tContainer = document.getElementById('pipeline-table');
+      tContainer.innerHTML = '';
+      
+      let renderMax = isDetailMode ? detailCycle : currentCycle;
+      const statusBar = document.getElementById('timeline-status-bar');
+      if (renderMax === 0) {
+        if (statusBar) statusBar.style.display = 'none';
+        return;
+      }
+      
+      let producerMap = {}; 
+      let consumerMap = {}; 
+      let statusText = '';
+      
+      if (isDetailMode) {
+        for (let idx = 0; idx < instructions.length; idx++) {
+          let s = schedule[idx];
+          for (let h of s.hazards_detail) {
+            let pKey = `${h.producerIdx}-${h.availCycle}`;
+            let cKey = `${idx}-${h.resolveCycle}`;
+            
+            if (!producerMap[pKey]) producerMap[pKey] = [];
+            if (!consumerMap[cKey]) consumerMap[cKey] = [];
+            
+            if (forwardingEnabled) {
+              producerMap[pKey].push(`${h.reg} is computed and sent directly to I${idx+1} before write-back`);
+              consumerMap[cKey].push(`receives ${h.reg} directly from I${h.producerIdx+1}`);
+            } else {
+              producerMap[pKey].push(`${h.reg} is written to register file for I${idx+1}`);
+              consumerMap[cKey].push(`reads ${h.reg} from register file (written by I${h.producerIdx+1})`);
+            }
+          }
+        }
+      }
+      
+      // Header row
+      let trHead = document.createElement('tr');
+      let thEmpty = document.createElement('th');
+      thEmpty.style.position = 'sticky';
+      thEmpty.style.left = '0';
+      thEmpty.style.backgroundColor = 'var(--bg-card)';
+      thEmpty.style.zIndex = '10';
+      trHead.appendChild(thEmpty);
+      
+      for (let c = 1; c <= renderMax; c++) {
+        let th = document.createElement('th');
+        th.textContent = `CC${c}`;
+        if (c === renderMax) th.className = 'col-current';
+        trHead.appendChild(th);
+      }
+      tContainer.appendChild(trHead);
+      
+      // Data rows
+      for (let i = 0; i < instructions.length; i++) {
+        let tr = document.createElement('tr');
+        
+        let tdLabel = document.createElement('td');
+        tdLabel.className = 'instr-label';
+        tdLabel.innerHTML = `<div>${instructions[i].id}</div><div style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-top: 4px; font-family: var(--font-mono);">${instructions[i].text}</div>`;
+        tr.appendChild(tdLabel);
+        
+        for (let c = 1; c <= renderMax; c++) {
+          let td = document.createElement('td');
+          let content = getCellContent(i, c, schedule, pipelineType);
+          let html = '';
+          if (content.label !== '') {
+            html += `<div class="cell-content-wrapper"><div class="stage-label-main" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">${content.label}</div>`;
+          }
+          
+          if (content.isStall && c === renderMax) {
+            let worstH = null;
+            let maxAvail = -1;
+            for (let h of schedule[i].hazards_detail) {
+              if (h.availCycle > maxAvail) { maxAvail = h.availCycle; worstH = h; }
+            }
+            if (worstH) {
+               statusText = `${instructions[i].id} is stalled in ID due to <span style="color: var(--amber); font-weight: bold;">RAW</span> hazard on <span style="color: var(--accent); font-family: var(--font-mono);">${worstH.reg}</span>`;
+            }
+          }
+          
+          if (content.isStall && isDetailMode) {
+            let worstH = null;
+            let maxAvail = -1;
+            for (let h of schedule[i].hazards_detail) {
+              if (h.availCycle > maxAvail) { maxAvail = h.availCycle; worstH = h; }
+            }
+            if (worstH) {
+              let pStage = getCellContent(worstH.producerIdx, c, schedule, pipelineType);
+              let pLabel = pStage.label.replace('→ ', '');
+              if (pLabel === '') pLabel = 'Done';
+              html += `<div class="stall-reason">${worstH.reg} in ${pLabel}</div>`;
+            }
+          } else if (isDetailMode && content.label !== '') {
+            let key = `${i}-${c}`;
+            let pAnns = producerMap[key];
+            let cAnns = consumerMap[key];
+            if (pAnns) {
+              for (let ann of pAnns) html += `<div class="stall-reason ok" style="color: var(--green);">${ann}</div>`;
+            }
+            if (cAnns) {
+              for (let ann of cAnns) html += `<div class="stall-reason warn" style="color: var(--amber);">${ann}</div>`;
+            }
+          }
+          
+          if (content.label !== '') {
+            html += `</div>`;
+          }
+          
+          td.innerHTML = html;
+          
+          if (content.cssClass) td.className = content.cssClass;
+          if (c === renderMax) {
+            td.classList.add('col-current');
+            if (content.label !== '') td.classList.add('cell-new');
+          }
+          tr.appendChild(td);
+        }
+        tContainer.appendChild(tr);
+      }
+      
+      if (statusBar) {
+          statusBar.style.display = 'flex';
+          let leftHTML = `<span style="background-color: rgba(0, 229, 255, 0.1); color: var(--accent); padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: bold;">Cycle: ${renderMax}</span>`;
+          if (statusText) leftHTML += `<span>${statusText}</span>`;
+          
+          document.getElementById('timeline-status-left').innerHTML = leftHTML;
+          document.getElementById('timeline-status-right').textContent = `Total Cycles: ${maxCycle}`;
+      }
+      
+      // scroll right
+      const container = document.getElementById('table-container');
+      container.scrollLeft = container.scrollWidth;
+    }
+
+    function updateDetailPanel() {
+      const panel = document.getElementById('narrative-panel');
+      if (!isDetailMode || detailCycle === 0) {
+        panel.style.display = 'none';
+        return;
+      }
+      
+      panel.style.display = 'flex';
+      let html = `<h3>Cycle ${detailCycle} — What's happening inside</h3>`;
+      
+      let hasActive = false;
+      for (let i = 0; i < instructions.length; i++) {
+        let s = schedule[i];
+        if (s.IF > detailCycle) continue;
+        let pEnd = (pipelineType === '5-stage') ? s.WB : s.MEMWB;
+        if (pEnd < detailCycle) continue;
+        
+        hasActive = true;
+        let cStage = getCellContent(i, detailCycle, schedule, pipelineType);
+        let stageLabel = cStage.label.replace('→ ', '');
+        let instrName = instructions[i].id;
+        let descHtml = '';
+        
+        if (cStage.isStall) {
+          let worstH = null;
+          let maxAvail = -1;
+          for (let h of s.hazards_detail) {
+            if (h.availCycle > maxAvail) { maxAvail = h.availCycle; worstH = h; }
+          }
+          if (worstH) {
+            let pStage = getCellContent(worstH.producerIdx, detailCycle, schedule, pipelineType);
+            let pLabel = pStage.label.replace('→ ', '');
+            if (pLabel === 'WB' || pLabel === 'MEM/WB') {
+              let nextStage = (cStage.stallStage === 'ID') ? 'EX' : 'ID';
+              descHtml = `<span class="text-warn">Last stall cycle. I${worstH.producerIdx + 1} is writing ${worstH.reg} to the register file right now. I${i + 1} will proceed to ${nextStage} next cycle.</span>`;
+            } else {
+              descHtml = `<span class="text-warn">Cannot read ${worstH.reg} yet — I${worstH.producerIdx + 1} is still in ${pLabel} and hasn't written the result. Holding position.</span>`;
+            }
+          }
+        } else {
+          let resolvedHz = s.hazards_detail.filter(h => h.resolveCycle === detailCycle);
+          let fwdConsumer = null;
+          let fwdReg = null;
+          let hasWaiting = false;
+          let waitingConsumer = null;
+          for (let k = i + 1; k < instructions.length; k++) {
+            let hzFwd = schedule[k].hazards_detail.find(h => h.producerIdx === i && h.availCycle === detailCycle && forwardingEnabled);
+            if (hzFwd && !fwdConsumer) { fwdConsumer = k + 1; fwdReg = hzFwd.reg; }
+            
+            let hzWait = schedule[k].hazards_detail.find(h => h.producerIdx === i && h.resolveCycle > detailCycle);
+            if (hzWait && !hasWaiting) { hasWaiting = true; waitingConsumer = k + 1; }
+          }
+
+          if (resolvedHz.length > 0) {
+            let h = resolvedHz[0];
+            let producer = h.producerIdx + 1;
+            let consumer = i + 1;
+            let reg = h.reg;
+            
+            if (forwardingEnabled && h.fwdPath) {
+              if (h.fwdPath.includes('MEM')) {
+                descHtml = `<span class="text-ok">${reg} loaded from memory output of I${producer}. Bypassed directly to I${consumer}'s EX stage via forwarding mux — register file never consulted.</span>`;
+              } else {
+                descHtml = `<span class="text-ok">${reg} is ready at I${producer}'s ALU output. Forwarded directly to I${consumer}'s EX input — no write-back needed first. Zero extra cycles lost.</span>`;
+              }
+            } else {
+              descHtml = `<span class="text-neutral">${reg} was written to the register file by I${producer} last cycle. Reading it now and proceeding to EX.</span>`;
+            }
+          } else if (stageLabel === 'WB' || stageLabel === 'MEM/WB') {
+            let ins = instructions[i];
+            let destReg = ins.dest;
+            if (!destReg) {
+              descHtml = `<span class="text-neutral">Completing memory store operation.</span>`;
+            } else if (hasWaiting) {
+              descHtml = `<span class="text-neutral">${destReg} is being written to the register file at the end of this cycle. I${waitingConsumer} can read it starting next cycle — this is the last stall cycle.</span>`;
+            } else {
+              descHtml = `<span class="text-neutral">${destReg} written to register file. No dependent instructions waiting.</span>`;
+            }
+          } else if (stageLabel === 'EX') {
+            if (fwdConsumer) {
+              descHtml = `<span class="text-ok">${fwdReg} result is ready at ALU output. Forwarding to I${fwdConsumer}'s EX stage right now via bypass mux.</span>`;
+            } else {
+              let ins = instructions[i];
+              let op = '';
+              if (ins.opcode === 'ADD') op = `${ins.dest} = ${ins.sources[0]} + ${ins.sources[1]}`;
+              else if (ins.opcode === 'SUB') op = `${ins.dest} = ${ins.sources[0]} - ${ins.sources[1]}`;
+              else if (ins.opcode === 'AND') op = `${ins.dest} = ${ins.sources[0]} & ${ins.sources[1]}`;
+              else if (ins.opcode === 'LW') op = `loading from memory address ${ins.sources[0]} + ${ins.op2}`;
+              else if (ins.opcode === 'SW') op = `storing ${ins.sources[0]} to memory address ${ins.sources[1]} + ${ins.op2}`;
+              else if (ins.opcode === 'ORI') op = `${ins.dest} = ${ins.sources[0]} | ${ins.op3}`;
+              
+              descHtml = `<span class="text-neutral">ALU computing ${op}. Result exists inside the pipeline but hasn't reached the register file yet — any instruction needing this result must wait.</span>`;
+            }
+          } else if (stageLabel === 'MEM') {
+            descHtml = `<span class="text-neutral">${instructions[i].dest || 'Data'} is passing through MEM. Still one stage away from being written to the register file.</span>`;
+          } else if (stageLabel === 'ID') {
+            descHtml = `<span class="text-neutral">Reading source registers from register file. All values available — no stall needed. Decoding opcode.</span>`;
+          } else if (stageLabel === 'IF') {
+            if (s.stalls > 0 && detailCycle === s.IF) {
+              let worstH = null;
+              let maxAvail = -1;
+              for (let h of s.hazards_detail) {
+                if (h.availCycle > maxAvail) { maxAvail = h.availCycle; worstH = h; }
+              }
+              let producer = worstH ? worstH.producerIdx + 1 : '?';
+              let reg = worstH ? worstH.reg : '?';
+              descHtml = `<span class="text-warn">Fetching ${instructions[i].text} from memory. ⚠ Will stall next cycle — ${reg} hasn't been written yet by I${producer}.</span>`;
+            } else {
+              descHtml = `<span class="text-neutral">Fetching ${instructions[i].text} from memory. No dependency conflicts detected.</span>`;
+            }
+          }
+        }
+        
+        html += `<div class="narrative-block">
+          <div><strong>${instrName}</strong> in <strong>${stageLabel}</strong></div>
+          <div style="margin-top: 4px; line-height: 1.4;">${descHtml}</div>
+        </div>`;
+      }
+      if (!hasActive) {
+        html += `<div class="narrative-block text-neutral">Pipeline empty.</div>`;
+      }
+      panel.innerHTML = html;
+    }
+
+
+
+
+
+    // ─── SECTION 7: HAZARD LOG RENDERING ─────────────────────────
+    function renderHazardLog() {
+      const logContainer = document.getElementById('hazard-log');
+      logContainer.innerHTML = '';
+      
+      if (hazards.length === 0) {
+        logContainer.innerHTML = `<div class="hazard-item ok" style="padding: 1rem; color: var(--green);">✓ No hazards detected. All instructions are independent.</div>`;
+        return;
+      }
+      
+      hazards.forEach(hStr => {
+        let parts = hStr.split(' — ');
+        let mainDesc = parts[0].replace('⚠ RAW Hazard: ', '');
+        let actionDesc = parts[1] || '';
+        
+        let match = mainDesc.match(/(I\d+) reads ([^\s]+) \(written by (I\d+)\)/);
+        if (match) {
+          let consumer = match[1];
+          let reg = match[2];
+          let producer = match[3];
+          
+          let action = 'Stall inserted';
+          let resumeText = `After ${producer} writes ${reg} (WB)`;
+          
+          if (actionDesc.includes('forwarded')) {
+            action = 'Resolved via Forwarding';
+            resumeText = `Data bypassed directly to ${consumer}`;
+          }
+          
+          let html = `
+            <div style="background-color: #111; border: 1px solid #333; border-radius: 12px; padding: 1rem 1.5rem; font-family: var(--font-mono); font-size: 0.85rem; color: #fff;">
+              <ul style="margin: 0; padding-left: 1.2rem; line-height: 1.8;">
+                <li><span style="color: #bbb;">Type:</span> RAW hazard</li>
+                <li><span style="color: #bbb;">Issue:</span> ${consumer} needs <span style="color: var(--amber);">${reg}</span> from ${producer} (not ready yet)</li>
+                <li><span style="color: #bbb;">Action:</span> ${action}</li>
+                <li><span style="color: #bbb;">Resume:</span> ${resumeText}</li>
+              </ul>
+            </div>
+          `;
+          logContainer.innerHTML += html;
+        } else {
+           logContainer.innerHTML += `<div class="hazard-item warning" style="color: var(--amber);">${hStr}</div>`;
+        }
+      });
+    }
+
+    function renderLegend() {
+      const legend = document.getElementById('stage-legend');
+      legend.innerHTML = '';
+      const stages = pipelineType === '5-stage' ? STAGES_5 : STAGES_4;
+      const colors = {
+        'IF': '#1a2a4a', 'ID': '#1a3a2a', 'EX': '#3a2a1a', 
+        'MEM': '#2a1a3a', 'WB': '#3a1a3a', 'MEM/WB': '#3a1a3a'
+      };
+      stages.forEach(st => {
+        legend.innerHTML += `<div class="legend-item"><div class="legend-box" style="background-color: ${colors[st]}"></div><span>${st}</span></div>`;
+      });
+      legend.innerHTML += `<div class="legend-item"><div class="legend-box" style="background-color: #2a2a2a"></div><span>STALL</span></div>`;
+      legend.innerHTML += `<div class="legend-item"><div class="legend-box" style="background-color: #1a3a3a"></div><span>FWD</span></div>`;
+    }
+
+    // ─── SECTION 8: UI EVENT HANDLERS ────────────────────────────
+    function updateOpcodeFields(row, opcode) {
+      const inputs = row.querySelectorAll('input[type="text"]');
+      const labels = row.querySelectorAll('label');
+      
+      if (opcode === 'ADD' || opcode === 'SUB' || opcode === 'AND') {
+        labels[0].textContent = 'RD'; inputs[0].placeholder = 'R1';
+        labels[1].textContent = 'RS1'; inputs[1].placeholder = 'R2';
+        labels[2].textContent = 'RS2'; inputs[2].placeholder = 'R3';
+      } else if (opcode === 'ORI') {
+        labels[0].textContent = 'RD'; inputs[0].placeholder = 'R1';
+        labels[1].textContent = 'RS1'; inputs[1].placeholder = 'R2';
+        labels[2].textContent = 'Imm'; inputs[2].placeholder = '100';
+      } else if (opcode === 'LW') {
+        labels[0].textContent = 'RD'; inputs[0].placeholder = 'R1';
+        labels[1].textContent = 'Offset'; inputs[1].placeholder = '0';
+        labels[2].textContent = 'RS_base'; inputs[2].placeholder = 'R2';
+      } else if (opcode === 'SW') {
+        labels[0].textContent = 'RS_src'; inputs[0].placeholder = 'R1';
+        labels[1].textContent = 'Offset'; inputs[1].placeholder = '0';
+        labels[2].textContent = 'RS_base'; inputs[2].placeholder = 'R2';
+      }
+      prepareSimulation();
+    }
+
+    function createInstructionRow(index, op='ADD', i1='R1', i2='R2', i3='R3') {
+      const div = document.createElement('div');
+      div.className = 'instr-row';
+      div.innerHTML = `
+        <span class="label">I${index}</span>
+        <select class="op-select" onchange="updateOpcodeFields(this.parentElement, this.value)">
+          <option value="ADD" ${op==='ADD'?'selected':''}>ADD</option>
+          <option value="SUB" ${op==='SUB'?'selected':''}>SUB</option>
+          <option value="AND" ${op==='AND'?'selected':''}>AND</option>
+          <option value="ORI" ${op==='ORI'?'selected':''}>ORI</option>
+          <option value="LW" ${op==='LW'?'selected':''}>LW</option>
+          <option value="SW" ${op==='SW'?'selected':''}>SW</option>
+        </select>
+        <div class="instr-inputs">
+          <div class="operand-group"><label>RD</label><input type="text" value="${i1}" oninput="prepareSimulation()"></div>
+          <div class="operand-group"><label>RS1</label><input type="text" value="${i2}" oninput="prepareSimulation()"></div>
+          <div class="operand-group"><label>RS2</label><input type="text" value="${i3}" oninput="prepareSimulation()"></div>
+        </div>
+        <button class="btn-remove" onclick="onRemoveInstruction(this.parentElement)" title="Remove">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        </button>
+      `;
+      document.getElementById('instr-list').appendChild(div);
+      updateOpcodeFields(div, op);
+    }
+
+    function reindexRows() {
+      const rows = document.querySelectorAll('.instr-row');
+      rows.forEach((row, i) => {
+        row.querySelector('.label').textContent = `I${i+1}`;
+      });
+      document.getElementById('num-instr').value = rows.length;
+      document.getElementById('btn-add-instr').disabled = rows.length >= 10;
+      prepareSimulation();
+    }
+
+    function onRemoveInstruction(rowElement) {
+      rowElement.remove();
+      reindexRows();
+    }
+
+    function onAddInstruction() {
+      const num = document.querySelectorAll('.instr-row').length;
+      if (num < 10) {
+        createInstructionRow(num + 1, 'ADD', 'R1', 'R2', 'R3');
+        reindexRows();
+      }
+    }
+
+    document.getElementById('btn-add-instr').addEventListener('click', onAddInstruction);
+
+    document.getElementById('instr-list').addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+        const inputs = Array.from(document.querySelectorAll('#instr-list input[type="text"]'));
+        const index = inputs.indexOf(e.target);
+        if (index === -1) return;
+
+        if (e.key === 'ArrowRight' && e.target.selectionStart === e.target.value.length) {
+          e.preventDefault();
+          if (inputs[index + 1]) inputs[index + 1].focus();
+        } else if (e.key === 'ArrowLeft' && e.target.selectionEnd === 0) {
+          e.preventDefault();
+          if (inputs[index - 1]) inputs[index - 1].focus();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (inputs[index + 3]) inputs[index + 3].focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (inputs[index - 3]) inputs[index - 3].focus();
+        }
+      }
+    });
+    document.getElementById('num-instr').addEventListener('change', (e) => {
+      let num = parseInt(e.target.value, 10);
+      if (isNaN(num) || num < 1) num = 1;
+      if (num > 10) num = 10;
+      e.target.value = num;
+      
+      const currentNum = document.querySelectorAll('.instr-row').length;
+      if (num > currentNum) {
+        for (let i = currentNum; i < num; i++) {
+          createInstructionRow(i + 1, 'ADD', 'R1', 'R2', 'R3');
+        }
+      } else if (num < currentNum) {
+        const rows = document.querySelectorAll('.instr-row');
+        for (let i = currentNum - 1; i >= num; i--) {
+          rows[i].remove();
+        }
+      }
+      reindexRows();
+    });
+
+    document.getElementById('btn-inc-instr').addEventListener('click', () => {
+      const input = document.getElementById('num-instr');
+      if (parseInt(input.value) < 10) {
+        input.value = parseInt(input.value) + 1;
+        input.dispatchEvent(new Event('change'));
+      }
+    });
+
+    document.getElementById('btn-dec-instr').addEventListener('click', () => {
+      const input = document.getElementById('num-instr');
+      if (parseInt(input.value) > 1) {
+        input.value = parseInt(input.value) - 1;
+        input.dispatchEvent(new Event('change'));
+      }
+    });
+
+    function prepareSimulation() {
+      onReset(); // stops run, resets currentCycle
+      instructions = parseInstructions();
+      if (!instructions) return; // Error parsing
+      
+      const res = buildScheduleAndHazards(instructions, pipelineType, forwardingEnabled);
+      schedule = res.sched;
+      hazards = res.haz;
+      maxCycle = res.mCycle;
+      
+      renderHazardLog();
+    }
+
+    document.querySelectorAll('input[name="pipeline-type"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        pipelineType = e.target.value;
+        renderLegend();
+        prepareSimulation();
+      });
+    });
+
+    document.getElementById('fwd-toggle').addEventListener('change', (e) => {
+      forwardingEnabled = e.target.checked;
+      prepareSimulation();
+    });
+
+    function syncControlButtons() {
+      if (isDetailMode) {
+        document.getElementById('btn-step').style.display = 'none';
+        document.getElementById('btn-step-detail').style.display = 'none';
+        document.getElementById('btn-run').style.display = 'none';
+        document.getElementById('btn-pause').style.display = 'none';
+        
+        document.getElementById('btn-prev-detail').style.display = 'inline-flex';
+        document.getElementById('btn-next-detail').style.display = 'inline-flex';
+        document.getElementById('btn-back-detail').style.display = 'inline-flex';
+      } else {
+        document.getElementById('btn-step').style.display = 'inline-flex';
+        document.getElementById('btn-step-detail').style.display = 'inline-flex';
+        document.getElementById('btn-run').style.display = isRunning ? 'none' : 'inline-flex';
+        document.getElementById('btn-pause').style.display = isRunning ? 'inline-flex' : 'none';
+        
+        document.getElementById('btn-prev-detail').style.display = 'none';
+        document.getElementById('btn-next-detail').style.display = 'none';
+        document.getElementById('btn-back-detail').style.display = 'none';
+      }
+    }
+
+    function onStep() {
+      if (!instructions) prepareSimulation();
+      if (!instructions) return;
+      isDetailMode = false;
+      document.body.classList.remove('detail-mode-active');
+      syncControlButtons();
+      if (currentCycle < maxCycle) {
+        currentCycle++;
+        renderTable();
+        updateDetailPanel();
+        if (currentCycle >= maxCycle) showCompletion();
+      }
+    }
+
+    function onStepDetail() {
+      if (!instructions) prepareSimulation();
+      if (!instructions) return;
+      
+      isDetailMode = true;
+      detailCycle = 1;
+      document.body.classList.add('detail-mode-active');
+      syncControlButtons();
+      
+      renderTable();
+      updateDetailPanel();
+    }
+    
+    function onNextDetail() {
+      if (isDetailMode && detailCycle < maxCycle) {
+        detailCycle++;
+        renderTable();
+        updateDetailPanel();
+      }
+    }
+
+    function onPrevDetail() {
+      if (isDetailMode && detailCycle > 1) {
+        detailCycle--;
+        renderTable();
+        updateDetailPanel();
+      }
+    }
+    
+    function onBackDetail() {
+      isDetailMode = false;
+      document.body.classList.remove('detail-mode-active');
+      syncControlButtons();
+      renderTable();
+      updateDetailPanel();
+    }
+
+    function onRun() {
+      if (!instructions) prepareSimulation();
+      if (!instructions) return;
+      isDetailMode = false;
+      document.body.classList.remove('detail-mode-active');
+      syncControlButtons();
+      if (currentCycle >= maxCycle) onReset();
+      
+      isRunning = true;
+      syncControlButtons();
+      
+      runTimer = setInterval(() => {
+        onStep();
+        if (currentCycle >= maxCycle) onPause();
+      }, 600);
+    }
+
+    function onPause() {
+      isRunning = false;
+      clearInterval(runTimer);
+      syncControlButtons();
+    }
+
+    function onReset() {
+      onPause();
+      currentCycle = 0;
+      detailCycle = 0;
+      isDetailMode = false;
+      document.body.classList.remove('detail-mode-active');
+      syncControlButtons();
+      document.getElementById('pipeline-table').innerHTML = '';
+      const banner = document.getElementById('completion-banner');
+      banner.style.display = 'none';
+      updateDetailPanel();
+    }
+
+    function showCompletion() {
+      const banner = document.getElementById('completion-banner');
+      banner.textContent = `✓ Simulation Complete — ${maxCycle} cycles total`;
+      banner.style.display = 'block';
+      setTimeout(() => { banner.style.display = 'none'; }, 4000);
+    }
+
+    document.getElementById('btn-step').addEventListener('click', onStep);
+    document.getElementById('btn-step-detail').addEventListener('click', onStepDetail);
+    document.getElementById('btn-next-detail').addEventListener('click', onNextDetail);
+    document.getElementById('btn-prev-detail').addEventListener('click', onPrevDetail);
+    document.getElementById('btn-back-detail').addEventListener('click', onBackDetail);
+    document.getElementById('btn-run').addEventListener('click', onRun);
+    document.getElementById('btn-pause').addEventListener('click', onPause);
+    document.getElementById('btn-reset').addEventListener('click', onReset);
+
+
+    // ─── SECTION 9: INITIALIZATION ───────────────────────────────
+    function initDefaultInstructions() {
+      document.getElementById('instr-list').innerHTML = '';
+      createInstructionRow(1, 'ADD', 'R1', 'R2', 'R3');
+      createInstructionRow(2, 'SUB', 'R4', 'R1', 'R5');
+      createInstructionRow(3, 'LW',  'R6', '0',  'R7');
+      createInstructionRow(4, 'ADD', 'R8', 'R6', 'R4');
+      reindexRows();
+    }
+
+    function main() {
+      initDefaultInstructions();
+      renderLegend();
+      prepareSimulation();
+    }
+
+    window.onload = main;
+  </script>
+</body>
+</html>
